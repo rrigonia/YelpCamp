@@ -6,6 +6,7 @@ const ejsMate = require('ejs-mate');
 const Campground = require('./models/campground');
 const wrapError = require('./utils/wrapError');
 const ExpressError = require('./utils/ExpressError');
+const {campgroundSchema} = require('./schemas');
 
 
 mongoose.connect('mongodb://localhost:27017/yelp-cp', {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true});
@@ -27,6 +28,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({extended: true}));
 app.use(methodOverride('_method'));
 
+// Validating my Put and Post with JOI
+const validateCampground = (req,res,next) => {
+    const {error} = campgroundSchema.validate(req.body);
+    if(error){
+        const msg = error.details.map(el => el.message).join(',');
+        throw new ExpressError(msg, 400)
+    } else{
+        return next();
+    }
+}
+
 app.get('/', (req,res,next) => {
     res.redirect('/campgrounds')
 });
@@ -40,7 +52,7 @@ app.get('/campgrounds/new',(req,res,next) => {
     res.render('campgrounds/new');
 });
 
-app.post('/campgrounds', wrapError(async(req,res,next) => {
+app.post('/campgrounds', validateCampground, wrapError(async(req,res,next) => {
     const { campground } = req.body;
     const newcamp = new Campground(campground);
     await newcamp.save();
@@ -59,7 +71,11 @@ app.get('/campgrounds/:id', wrapError(async (req,res,next) => {
     res.render('campgrounds/show', {campground});
 }));
 
-
+app.put('/campgrounds/:id',validateCampground, wrapError(async(req,res,next) => {
+    const {id} = req.params;
+    const campground = await Campground.findByIdAndUpdate(id,{...req.body.campground});
+    res.redirect(`/campgrounds/${campground._id}`);
+}))
 
 
 app.get('/campgrounds/:id/edit', wrapError(async(req,res,next) => {
