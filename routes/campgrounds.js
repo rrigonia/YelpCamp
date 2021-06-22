@@ -5,6 +5,7 @@ const ExpressError = require("../utils/ExpressError");
 const Campground = require("../models/campground");
 const { campgroundSchema } = require("../schemas");
 const ObjectID = require('mongodb').ObjectID;
+const isLoggedIn = require('../middleware');
 
 const validateCampground = (req, res, next) => {
     const { error } = campgroundSchema.validate(req.body);
@@ -23,11 +24,11 @@ router.get("/", wrapError(async (req, res, next) => {
 })
 );
 
-router.get("/new", (req, res, next) => {
+router.get("/new", isLoggedIn, (req, res, next) => {
     res.render("campgrounds/new");
 });
 
-router.post("/", validateCampground, wrapError(async (req, res, next) => {
+router.post("/", isLoggedIn, validateCampground, wrapError(async (req, res, next) => {
     const { campground } = req.body;
     const newcamp = new Campground(campground);
     await newcamp.save();
@@ -35,21 +36,21 @@ router.post("/", validateCampground, wrapError(async (req, res, next) => {
     res.redirect(`/campgrounds/${newcamp._id}`);
 }));
 
-router.delete("/:id", wrapError(async (req, res, next) => {
+router.delete("/:id", isLoggedIn, wrapError(async (req, res, next) => {
     const { id } = req.params;
     const delCamp = await Campground.findByIdAndDelete(id);
     req.flash('success', 'Successfully deleted a Campground!');
     res.redirect("/campgrounds");
 }));
 
-router.put("/:id", validateCampground, wrapError(async (req, res, next) => {
+router.put("/:id", isLoggedIn, validateCampground, wrapError(async (req, res, next) => {
     const { id } = req.params;
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
     req.flash('success', 'Successfully updated a Campground!')
     res.redirect(`/campgrounds/${campground._id}`);
 }));
 
-router.get("/:id/edit", wrapError(async (req, res, next) => {
+router.get("/:id/edit", isLoggedIn, wrapError(async (req, res, next) => {
     const { id } = req.params;
     if (!ObjectID.isValid(id)) {
         req.flash('error', 'Cannot find that Campground.');
