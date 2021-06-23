@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== "production") {
+	require('dotenv').config();
+}
+
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -27,7 +31,6 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
 	console.log("Database Connected");
 });
-
 // Ends Mongoose
 
 const app = express();
@@ -48,10 +51,10 @@ const sessionConfig = {
 		expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
 		maxAge: 1000 * 60 * 60 * 24 * 7
 	}
-}
+};
+
 app.use(session(sessionConfig)); //have to be before the passport.init
 app.use(flash());
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -81,12 +84,9 @@ app.get("/", (req, res, next) => {
 	res.redirect("/campgrounds");
 });
 
-
-
 app.get("*", (req, res, next) => {
 	next(new ExpressError("Page Not Found", 404));
 });
-
 
 app.use((err, req, res, next) => {
 	const { status = 500 } = err;
