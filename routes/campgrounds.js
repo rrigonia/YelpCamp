@@ -3,23 +3,21 @@ const router = express.Router();
 const campgrounds = require('../controllers/campgrounds')
 const wrapError = require("../utils/wrapError");
 const { isLoggedIn, isAuthor, validateCampground } = require('../middleware');
-const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
+const multer = require('multer');
+const { storage } = require('../cloudinary');
+const upload = multer({ storage });
 
 
 router.route('/')
     .get(wrapError(campgrounds.index))
-    // .post(isLoggedIn, validateCampground, wrapError(campgrounds.createCampground));
-    .post(upload.single('image'), (req, res) => {
-        console.log(req.body, req.file);
-        res.send("IT Worked ?!")
-    });
+    .post(isLoggedIn, upload.array('image'), validateCampground, wrapError(campgrounds.createCampground));
+
 
 router.get("/new", isLoggedIn, campgrounds.renderNewForm);
 
 router.route('/:id')
     .get(wrapError(campgrounds.showCampground))
-    .put(isLoggedIn, isAuthor, validateCampground, wrapError(campgrounds.updateCampground))
+    .put(isLoggedIn, isAuthor, upload.array('image'), validateCampground, wrapError(campgrounds.updateCampground))
     .delete(isLoggedIn, isAuthor, wrapError(campgrounds.delete));
 
 router.get("/:id/edit", isLoggedIn, isAuthor, wrapError(campgrounds.renderEditForm));
