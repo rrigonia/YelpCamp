@@ -13,11 +13,14 @@ const ExpressError = require("./utils/ExpressError");
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const User = require('./models/user');
-
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const {securityConfig} = require('./security/securitySrcs');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
-const userRoutes = require('./routes/user')
-
+const userRoutes = require('./routes/user');
+// const dbUrl = process.env.DB_URL
+// "mongodb://localhost:27017/yelp-cp"
 // Mongoose
 mongoose.connect("mongodb://localhost:27017/yelp-cp", {
 	useNewUrlParser: true,
@@ -42,12 +45,16 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(mongoSanitize({replaceWith: '_'}));
+
 const sessionConfig = {
+	name: 'session',
 	secret: 'thisshouldbeabettersecret',
 	resave: false,
 	saveUninitialized: true,
 	cookie: {
 		httpOnly: true,
+		// secure: true,
 		expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
 		maxAge: 1000 * 60 * 60 * 24 * 7
 	}
@@ -55,6 +62,9 @@ const sessionConfig = {
 
 app.use(session(sessionConfig)); //have to be before the passport.init
 app.use(flash());
+app.use(helmet());
+// Config helmet security
+app.use(helmet.contentSecurityPolicy(securityConfig));
 
 app.use(passport.initialize());
 app.use(passport.session());
