@@ -41,7 +41,7 @@ const seedDB = async () => {
                     filename: 'YelpCamp/rmetaesghmzqjdifmofj'
                 },
                 {
-                    url: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8Y2FtcGdyb3VuZHxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+                    url: 'https://images.unsplash.com/photo-1476041800959-2f6bb412c8ce?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FtcGdyb3VuZHxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
                     filename: 'YelpCamp/y6sfon0saueyivh01ovw'
                 }
             ],
